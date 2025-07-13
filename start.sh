@@ -3,11 +3,11 @@
 # Disable Spotlight indexing
 sudo mdutil -i off -a
 
-# Enable VNC with full access for all users
+# Enable VNC access with full privileges
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
   -configure -allowAccessFor -allUsers -privs -all
 
-# Enable legacy VNC protocol for compatibility
+# Enable legacy VNC mode
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
   -configure -clientopts -setvnclegacy -vnclegacy yes
 
@@ -24,16 +24,22 @@ echo runnerrdp | perl -we '
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
 
-# Download cloudflared from Cloudflare's static binary CDN (macOS x86_64)
+# Download cloudflared (static binary for macOS x86_64)
 curl -L -o cloudflared https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-cloudflared/static-binaries/cloudflared-darwin-amd64
 chmod +x cloudflared
 
-# Start tunnel to VNC (port 5900)
-./cloudflared tunnel --url tcp://localhost:5900 --no-autoupdate --logfile tunnel.log > tunnel_output.log 2>&1 &
-sleep 10
+# Start Cloudflare Tunnel to expose port 5900 (VNC)
+./cloudflared tunnel --url tcp://localhost:5900 --no-autoupdate > tunnel.log 2>&1 &
+sleep 15
 
-# Extract and display the public tunnel URL
-TUNNEL_URL=$(grep -oE 'tcp://[a-z0-9\-\.]+:[0-9]+' tunnel.log | head -n 1)
-echo "✅ VNC Access:"
-echo "$TUNNEL_URL"
-echo "::notice title=VNC Access::$TUNNEL_URL"
+# Extract tunnel URL or show error
+if grep -q "trycloudflare.com" tunnel.log; then
+  TUNNEL_URL=$(grep -oE 'tcp://[a-z0-9\-\.]+:[0-9]+' tunnel.log | head -n 1)
+  echo "✅ VNC Access:"
+  echo "$TUNNEL_URL"
+  echo "::notice title=VNC Access::$TUNNEL_URL"
+else
+  echo "❌ Cloudflared failed to start. Log below:"
+  echo "::error::Cloudflared log:"
+  cat tunnel.log
+fi
