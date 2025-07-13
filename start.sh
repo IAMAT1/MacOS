@@ -23,9 +23,9 @@ echo "✅ Restarting Remote Desktop services..."
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
 
-# Download Playit client
+# Download Playit client (✅ FIXED link to actual binary)
 echo "⬇️ Downloading Playit..."
-curl -L -o playit https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-darwin-amd64
+curl -L -o playit https://github.com/playit-cloud/playit-agent/releases/download/v0.15.5/playit-darwin-amd64
 chmod +x playit
 
 # Write Playit config from GitHub Secret
