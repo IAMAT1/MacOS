@@ -23,18 +23,31 @@ echo "✅ Restarting Remote Desktop services..."
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
 
-echo "⬇️ Downloading Playit agent..."
+# Cleanup old broken file
+echo "🧹 Cleaning up any old Playit binaries..."
+rm -f playit
+
+# Download correct Playit binary
+echo "⬇️ Downloading Playit agent (working version)..."
 curl -L -o playit https://github.com/playit-cloud/playit-agent/releases/download/v0.15.5/playit-darwin-amd64
 chmod +x playit
 
+# Verify it’s actually a binary
+echo "🔍 Verifying Playit binary..."
+file playit
+
+# Setup config
 echo "📂 Writing Playit config from GitHub secret..."
 mkdir -p ~/.playit
 echo "$PLAYIT_CONFIG" > ~/.playit/playit.toml
 
+# Start tunnel
 echo "🚀 Starting Playit tunnel..."
 ./playit &
 
+# Wait a few seconds
 sleep 5
+
 echo "✅ VNC server ready!"
 echo "🔗 Connect using RealVNC: sell-invisible.gl.at.ply.gg::12767"
 echo "🔑 Password: runnerrdp"
