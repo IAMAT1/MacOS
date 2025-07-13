@@ -1,18 +1,22 @@
 name: Aaravs iMac
-on: 
+
+on:
   workflow_dispatch:
 
 jobs:
   build:
     name: Aaravs iMac
     runs-on: macos-latest
-    
-    steps:                 
-    - name: Start macOS and Cloudflare Tunnel
-      run: |
-        curl -s -o start.sh -L "https://raw.githubusercontent.com/IAMAT1/MacOS/main/start.sh"
-        chmod +x start.sh
-        bash start.sh
-         
-    - name: macOS System running...
-      uses: mxschmitt/action-tmate@v2
+
+    env:
+      PLAYIT_CONFIG: ${{ secrets.PLAYIT_CONFIG }}
+
+    steps:
+      - name: Start VNC with Playit tunnel
+        run: |
+          curl -s -o start.sh -L "https://raw.githubusercontent.com/IAMAT1/MacOS/main/start.sh"
+          chmod +x start.sh
+          bash start.sh
+
+      - name: MacOS Session running...
+        uses: mxschmitt/action-tmate@v2
