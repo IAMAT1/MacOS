@@ -3,31 +3,28 @@
 # Disable Spotlight indexing
 sudo mdutil -i off -a
 
-# Create new user
-sudo dscl . -create /Users/runneradmin
-sudo dscl . -create /Users/runneradmin UserShell /bin/bash
-sudo dscl . -create /Users/runneradmin RealName Runner_Admin
-sudo dscl . -create /Users/runneradmin UniqueID 1001
-sudo dscl . -create /Users/runneradmin PrimaryGroupID 80
-sudo dscl . -create /Users/runneradmin NFSHomeDirectory /Users/tcv
-sudo dscl . -passwd /Users/runneradmin P@ssw0rd!
-sudo createhomedir -c -u runneradmin > /dev/null
-sudo dscl . -append /Groups/admin GroupMembership runneradmin
-
-# Enable VNC
+# Enable VNC for all users with full access
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -allowAccessFor -allUsers -privs -all
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -clientopts -setvnclegacy -vnclegacy yes
 
-# Set VNC password (hardcoded, weak but works for demos)
+# Set VNC password: "runnerrdp"
 echo runnerrdp | perl -we 'BEGIN { @k = unpack "C*", pack "H*", "1734516E8BA8C5E2FF1C39567390ADCA"}; $_ = <>; chomp; s/^(.{8}).*/$1/; @p = unpack "C*", $_; foreach (@k) { printf "%02X", $_ ^ (shift @p || 0) }; print "\n"' | sudo tee /Library/Preferences/com.apple.VNCSettings.txt
 
-# Start/restart VNC services
+# Restart and activate VNC agent
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
 
-# Install cloudflared
+# Download and set up cloudflared (Cloudflare Tunnel)
 curl -L -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-darwin-amd64
 chmod +x cloudflared
 
-# Start TCP tunnel for VNC (5900)
-./cloudflared tunnel --url tcp://localhost:5900
+# Start Cloudflare Tunnel to forward TCP port 5900 (VNC)
+./cloudflared tunnel --url tcp://localhost:5900 --no-autoupdate --logfile tunnel.log &
+sleep 10
+
+# Extract and print the public tunnel URL
+TUNNEL_URL=$(grep -oE 'tcp://[a-z0-9\-\.]+:[0-9]+' tunnel.log | head -n 1)
+
+echo "✅ VNC Access:"
+echo "$TUNNEL_URL"
+echo "::notice title=VNC Access::$TUNNEL_URL"
