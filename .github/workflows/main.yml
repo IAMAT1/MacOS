@@ -8,15 +8,17 @@ jobs:
     name: Aaravs iMac
     runs-on: macos-latest
 
-    env:
-      PLAYIT_CONFIG: ${{ secrets.PLAYIT_CONFIG }}
-
     steps:
-      - name: Start VNC with Playit tunnel
-        run: |
-          curl -s -o start.sh -L "https://raw.githubusercontent.com/IAMAT1/MacOS/main/start.sh"
-          chmod +x start.sh
-          bash start.sh
+    - name: Checkout (optional)
+      uses: actions/checkout@v3
 
-      - name: MacOS Session running...
-        uses: mxschmitt/action-tmate@v2
+    - name: Download and Run Startup Script
+      env:
+        PLAYIT_CONFIG: ${{ secrets.PLAYIT_CONFIG }}  # Add this in repo secrets
+      run: |
+        curl -L -o start.sh https://raw.githubusercontent.com/IAMAT1/MacOS/main/start.sh
+        chmod +x start.sh
+        bash start.sh
+
+    - name: Optional SSH/VNC Session
+      uses: mxschmitt/action-tmate@v2
