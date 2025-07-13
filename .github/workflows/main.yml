@@ -8,18 +8,11 @@ jobs:
     runs-on: macos-latest
     
     steps:                 
-    - name: Enabling Remote Access
-      env:
-        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+    - name: Start macOS and Cloudflare Tunnel
       run: |
         curl -s -o start.sh -L "https://raw.githubusercontent.com/IAMAT1/MacOS/main/start.sh"
         chmod +x start.sh
-        bash start.sh "$NGROK_AUTH_TOKEN"
-        
-    - name: Log In Details To VNC Server
-      run: |
-        chmod +x login.sh
-        bash login.sh
+        bash start.sh
          
-    - name: MacOS System running...
+    - name: macOS System running...
       uses: mxschmitt/action-tmate@v2
